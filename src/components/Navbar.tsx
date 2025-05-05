@@ -1,7 +1,8 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../ThemeContext";
-import { Button, ListItemText, AppBar, Toolbar, Typography, IconButton, Switch, FormControlLabel, Drawer, List, useMediaQuery, useTheme, ListItemButton,} from "@mui/material";
+import { Button, ListItemText, AppBar, Toolbar, Typography, IconButton, Switch, FormControlLabel, Drawer, List, useMediaQuery, useTheme, ListItemButton } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
+import { Link } from 'react-router-dom'; // <-- Import Link from react-router-dom
 
 export const Navbar = () => {
   const theme = useTheme();
@@ -23,7 +24,7 @@ export const Navbar = () => {
     { label: "Home", path: "/" },
     { label: "Exchange Rates", path: "/exchange-rates" },
     { label: "About", path: "/about" },
-    { label: "Error Page", path: "/error" },
+    { label: "Error Page", path: "/error_page" },
   ];
 
   return (
@@ -51,6 +52,8 @@ export const Navbar = () => {
             <Button
               key={path}
               color="inherit"
+              component={Link}  // <-- Use Link for navigation
+              to={path}
             >
               {label}
             </Button>
@@ -74,13 +77,13 @@ export const Navbar = () => {
         <List>
           {navLinks.map(({ label, path }) => (
             <ListItemButton
-            key={path}
-            onClick={toggleDrawer}
-            component="a"
-            href={path} // You can replace this with a <Link> if using React Router
-          >
-            <ListItemText primary={label} />
-          </ListItemButton>
+              key={path}
+              onClick={toggleDrawer}
+              component={Link}  // <-- Use Link for navigation
+              to={path}
+            >
+              <ListItemText primary={label} />
+            </ListItemButton>
           ))}
         </List>
       </Drawer>

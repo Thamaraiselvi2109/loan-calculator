@@ -47,6 +47,7 @@ export const ShowEmiData = () => {
   const { loandetails, setLoanDetails } = useContext(Context);
   const { principal, interest, year } = loandetails;
   const [currency, setCurrency] = useState("USD");
+  const [error, setError] = useState<string | null>(null)
   const [conversionRate, setConversionRate] = useState(1); // default 1 for USD
   const { schedule, monthlyEMI } = useMemo(
     () => generateAmortizationSchedule(principal, interest, year),
@@ -66,11 +67,13 @@ export const ShowEmiData = () => {
       }
 
       try {
-        const res = await fetch(`https://v6.exchangerate-api.com/v6/916937662ca1904b5d5fde3e/latest/USD`);
+        const res = await fetch(`https://v6.exchangerate-api.com/v6/8313c97a4377a09ba6a498f9/latest/USD`);
         const data = await res.json();
         setConversionRate(data.conversion_rates[currency] || 1);
-      } catch (error) {
+      }
+       catch (error:any) {
         console.error("Error fetching exchange rate:", error);
+        setError(error.message || "Failed to fetch exchange rates")
         setConversionRate(1); // fallback
       }
     };
@@ -81,6 +84,12 @@ export const ShowEmiData = () => {
   const handleReset = () => {
     setLoanDetails({ principal: 0, interest: 0, year: 0 });
   };
+
+  if(error){
+    return(
+      <h1 className="text-red">Error fetching data</h1>
+    )
+  }
 
   return (
     <Box sx={{ p: isMobile ? 2 : 4 }}>

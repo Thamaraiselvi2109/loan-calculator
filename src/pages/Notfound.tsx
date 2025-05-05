@@ -12,11 +12,8 @@ export const NotFound = () => {
       height="90vh"
       bgcolor="background.paper"
     >
-      <Typography variant="h3" color="error" gutterBottom>
-        404 - Page Not Found
-      </Typography>
       <Typography variant="h6" color="textSecondary" paragraph>
-        Oops! The page you're looking for doesn't exist.
+      Something went wrong in the application.
       </Typography>
       <Link to='/'>
       <Button
