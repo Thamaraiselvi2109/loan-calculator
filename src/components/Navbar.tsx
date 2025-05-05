@@ -1,30 +1,35 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../ThemeContext";
-import {Button, ListItem, ListItemText, AppBar, Toolbar, Typography, IconButton, Switch, FormControlLabel, Drawer, List, useMediaQuery, useTheme } from "@mui/material";
-import MenuIcon from '@mui/icons-material/Menu'; // Import the MenuIcon
+import { Button, ListItemText, AppBar, Toolbar, Typography, IconButton, Switch, FormControlLabel, Drawer, List, useMediaQuery, useTheme, ListItemButton,} from "@mui/material";
+import MenuIcon from '@mui/icons-material/Menu';
 
 export const Navbar = () => {
-  const themeContext = useContext(ThemeContext);
-  const [openDrawer, setOpenDrawer] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Check if screen size is small
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const themeContext = useContext(ThemeContext);
 
   if (!themeContext) {
     throw new Error("Navbar must be used within a CustomThemeProvider");
   }
 
   const { toggleTheme, mode } = themeContext;
+  const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
-  // Function to toggle the Drawer (side menu)
   const toggleDrawer = () => {
-    setOpenDrawer(!openDrawer);
+    setOpenDrawer(prev => !prev);
   };
+
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "Exchange Rates", path: "/exchange-rates" },
+    { label: "About", path: "/about" },
+    { label: "Error Page", path: "/error" },
+  ];
 
   return (
     <>
       <AppBar position="static">
         <Toolbar>
-          {/* Hamburger menu for mobile */}
           {isMobile && (
             <IconButton
               size="large"
@@ -38,22 +43,19 @@ export const Navbar = () => {
             </IconButton>
           )}
 
-          {/* App name or logo */}
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Loan Calculator
           </Typography>
 
-          {/* Desktop buttons */}
-          {!isMobile && (
-            <>
-              <Button color="inherit">Home</Button>
-              <Button color="inherit">Exchange Rates</Button>
-              <Button color="inherit">About</Button>
-              <Button color="inherit">Error page</Button>
-            </>
-          )}
+          {!isMobile && navLinks.map(({ label, path }) => (
+            <Button
+              key={path}
+              color="inherit"
+            >
+              {label}
+            </Button>
+          ))}
 
-          {/* Theme toggle */}
           <FormControlLabel
             control={
               <Switch
@@ -63,25 +65,23 @@ export const Navbar = () => {
                 color="default"
               />
             }
+            label=""
           />
         </Toolbar>
       </AppBar>
 
-      {/* Drawer for mobile screens */}
       <Drawer anchor="left" open={openDrawer} onClose={toggleDrawer}>
         <List>
-          <ListItem button onClick={toggleDrawer}>
-            <ListItemText primary="Home" />
-          </ListItem>
-          <ListItem button onClick={toggleDrawer}>
-            <ListItemText primary="Exchange Rates" />
-          </ListItem>
-          <ListItem button onClick={toggleDrawer}>
-            <ListItemText primary="About" />
-          </ListItem>
-          <ListItem button onClick={toggleDrawer}>
-            <ListItemText primary="Error Page" />
-          </ListItem>
+          {navLinks.map(({ label, path }) => (
+            <ListItemButton
+            key={path}
+            onClick={toggleDrawer}
+            component="a"
+            href={path} // You can replace this with a <Link> if using React Router
+          >
+            <ListItemText primary={label} />
+          </ListItemButton>
+          ))}
         </List>
       </Drawer>
     </>
