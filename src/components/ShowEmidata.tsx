@@ -1,6 +1,10 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { Context } from "../context";
-import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Button, MenuItem, Select, InputLabel, FormControl, useMediaQuery, useTheme} from "@mui/material";
+import {
+  Box, Paper, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Typography, Button, MenuItem, Select,
+  InputLabel, FormControl, useMediaQuery, useTheme
+} from "@mui/material";
 
 type AmortizationRow = {
   month: number;
@@ -35,12 +39,15 @@ const generateAmortizationSchedule = (
   return { schedule, monthlyEMI: +emi.toFixed(2) };
 };
 
-const currencySymbols: Record<string, string> = {USD: "$", INR: "₹",EUR: "€",GBP: "£",JPY: "¥",AUD: "A$"};
+const currencySymbols: Record<string, string> = {
+  USD: "$", INR: "₹", EUR: "€", GBP: "£", JPY: "¥", AUD: "A$"
+};
 
 export const ShowEmiData = () => {
   const { loandetails, setLoanDetails } = useContext(Context);
   const { principal, interest, year } = loandetails;
   const [currency, setCurrency] = useState("USD");
+  const [conversionRate, setConversionRate] = useState(1); // default 1 for USD
   const { schedule, monthlyEMI } = useMemo(
     () => generateAmortizationSchedule(principal, interest, year),
     [principal, interest, year]
@@ -49,6 +56,27 @@ export const ShowEmiData = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const symbol = currencySymbols[currency] || currency;
+
+  // 👇 Fetch exchange rate whenever currency changes
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      if (currency === "USD") {
+        setConversionRate(1);
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://v6.exchangerate-api.com/v6/916937662ca1904b5d5fde3e/latest/USD`);
+        const data = await res.json();
+        setConversionRate(data.conversion_rates[currency] || 1);
+      } catch (error) {
+        console.error("Error fetching exchange rate:", error);
+        setConversionRate(1); // fallback
+      }
+    };
+
+    fetchExchangeRate();
+  }, [currency]);
 
   const handleReset = () => {
     setLoanDetails({ principal: 0, interest: 0, year: 0 });
@@ -61,7 +89,7 @@ export const ShowEmiData = () => {
       </Typography>
 
       <Typography variant="h6" mb={2} textAlign="center">
-        Monthly EMI: {symbol}{monthlyEMI.toFixed(2)}
+        Monthly EMI: {symbol}{(monthlyEMI * conversionRate).toFixed(2)}
       </Typography>
 
       <Box display="flex" flexDirection={isMobile ? "column" : "row"} justifyContent="center" alignItems="center" gap={2} mb={3}>
@@ -92,9 +120,9 @@ export const ShowEmiData = () => {
             {schedule.map(({ month, principal, interest, balance }) => (
               <TableRow key={month} hover>
                 <TableCell>{month}</TableCell>
-                <TableCell>{symbol}{principal.toLocaleString()}</TableCell>
-                <TableCell>{symbol}{interest.toLocaleString()}</TableCell>
-                <TableCell>{symbol}{balance.toLocaleString()}</TableCell>
+                <TableCell>{symbol}{(principal * conversionRate).toLocaleString(undefined, { minimumFractionDigits: 2 })}</TableCell>
+                <TableCell>{symbol}{(interest * conversionRate).toLocaleString(undefined, { minimumFractionDigits: 2 })}</TableCell>
+                <TableCell>{symbol}{(balance * conversionRate).toLocaleString(undefined, { minimumFractionDigits: 2 })}</TableCell>
               </TableRow>
             ))}
           </TableBody>
